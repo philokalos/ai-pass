@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Pass QR Code Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 400px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      letter-spacing: 4px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    #qrcode canvas {
+      border-radius: 12px;
+    }
+    .url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #999;
+      word-break: break-all;
+      margin-bottom: 24px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    .download-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    .instructions {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #eee;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI PASS</h1>
+    <p class="subtitle">QR Code for Digital Gift Card</p>
+
+    <div id="qrcode"></div>
+
+    <div class="url">https://philokalos.github.io/ai-pass/</div>
+
+    <button class="download-btn" onclick="downloadQR()">Download PNG</button>
+
+    <div class="instructions">
+      <strong>사용 방법</strong><br>
+      1. Download PNG 클릭<br>
+      2. QR 이미지를 카드에 인쇄<br>
+      3. 마니또에게 전달
+    </div>
+  </div>
+
+  <script>
+    const url = 'https://philokalos.github.io/ai-pass/';
+
+    // Generate QR Code
+    QRCode.toCanvas(document.createElement('canvas'), url, {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    }, function(error, canvas) {
+      if (error) console.error(error);
+      document.getElementById('qrcode').appendChild(canvas);
+    });
+
+    // Download function
+    function downloadQR() {
+      const canvas = document.querySelector('#qrcode canvas');
+      const link = document.createElement('a');
+      link.download = 'ai-pass-qr.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1a1a1a">
+
+  <title>AI Creative Pass - Confidential</title>
+  <meta name="description" content="AI Creative Pass - Secure Access Required">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AI Creative Pass - Restricted">
+  <meta property="og:description" content="Secure Access Required.">
+
+  <!-- Favicon (emoji) -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+
+  <!-- Preconnect to fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ========================================
+       1. CSS Variables & Design System
+       ======================================== */
+    :root {
+      /* Background */
+      --bg-color: #E0E0E0;
+      --grid-color: rgba(0, 0, 0, 0.15);
+
+      /* Card (Brutalist) */
+      --card-bg: #FFFFFF;
+      --card-border: #000000;
+      --card-border-width: 3px;
+      --card-shadow: 10px 10px 0px 0px #000000;
+      --card-shadow-active: 6px 6px 0px 0px #000000;
+
+      /* Text */
+      --text-primary: #000000;
+      --info-bg: #FFE500;
+      --info-border: #000000;
+
+      /* Animation */
+      --easing-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+      --font-display: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    /* ========================================
+       2. Reset & Base Styles
+       ======================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: var(--font-display);
+      background-color: var(--bg-color);
+      background-image:
+        linear-gradient(var(--grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+      background-size: 32px 32px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 16px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::after {
+      content: "AI_PASS_SECURE_V1.0";
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* ========================================
+       3. Security Seal Overlay (Option A)
+       ======================================== */
+    #security-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(20, 20, 20, 0.95);
+      background-image:
+        repeating-linear-gradient(45deg,
+          #1a1a1a,
+          #1a1a1a 10px,
+          #222 10px,
+          #222 20px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .seal-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .warning-tape {
+      background: #FFE500;
+      color: #000;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 18px;
+      padding: 12px 0;
+      width: 120%;
+      margin-left: -10%;
+      transform: rotate(-5deg);
+      border: 3px solid #000;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      text-transform: uppercase;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .warning-tape::before,
+    .warning-tape::after {
+      content: "CONFIDENTIAL // DO NOT SHARE //";
+      white-space: nowrap;
+    }
+
+    .lock-icon {
+      font-size: 60px;
+      margin-bottom: 24px;
+      filter: drop-shadow(0 4px 0 #000);
+      animation: pulseLock 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseLock {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .security-msg {
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      margin-bottom: 32px;
+      opacity: 0.8;
+      line-height: 1.5;
+    }
+
+    .break-seal-btn {
+      background: #000;
+      color: #FFF;
+      border: 2px solid #FFF;
+      padding: 16px 32px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+      box-shadow: 6px 6px 0 #FFF;
+    }
+
+    .break-seal-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0 #FFF;
+    }
+
+    #security-overlay.unlocked {
+      animation: unlockFade 0.6s var(--easing-smooth) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes unlockFade {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.1);
+      }
+    }
+
+    /* ========================================
+       4. Main Container Styles
+       ======================================== */
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: scale(0.95);
+      filter: blur(10px);
+      transition: all 0.8s var(--easing-smooth);
+    }
+
+    #main-container.visible {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+
+    .card-wrapper {
+      perspective: 1200px;
+    }
+
+    /* ========================================
+       5. 3D Flip Card Styles
+       ======================================== */
+    .card-container {
+      width: min(380px, 90vw);
+      height: min(640px, 85vh);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s var(--easing-smooth);
+      cursor: pointer;
+      will-change: transform;
+    }
+
+    .card-container.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-container:active .card {
+      box-shadow: var(--card-shadow-active);
+      transform: translate3d(4px, 4px, 0);
+    }
+
+    .card {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      background: var(--card-bg);
+      border: var(--card-border-width) solid var(--card-border);
+      box-shadow: var(--card-shadow);
+      border-radius: 0;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      transform: translate3d(0, 0, 0);
+      overflow: hidden;
+    }
+
+    .card.front::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: repeating-linear-gradient(45deg,
+          #000,
+          #000 10px,
+          #fff 10px,
+          #fff 20px);
+      border-bottom: 3px solid #000;
+    }
+
+    .card.back {
+      transform: rotateY(180deg);
+      background: #fff;
+    }
+
+    /* ========================================
+       6. Card Front Styles
+       ======================================== */
+    .card-header {
+      text-align: center;
+      margin-bottom: 24px;
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .card-header h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: #000;
+      text-transform: uppercase;
+      border: 3px solid #000;
+      display: inline-block;
+      padding: 4px 12px;
+      box-shadow: 4px 4px 0 #000;
+      background: #fff;
+      transform: rotate(-2deg);
+    }
+
+    .amount-box {
+      border: 3px solid #000;
+      background: #fff;
+      border-radius: 0;
+      padding: 24px 20px;
+      text-align: center;
+      margin-bottom: 32px;
+      box-shadow: 6px 6px 0px #000;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .amount {
+      font-family: var(--font-mono);
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      color: #000;
+      line-height: 1.1;
+    }
+
+    .service-list {
+      list-style: none;
+      text-align: left;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+      padding-left: 12px;
+      border-left: 4px solid #000;
+    }
+
+    .service-list li {
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+      line-height: 1.3;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .service-list li:last-child {
+      border-bottom: none;
+    }
+
+    .service-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .service-name {
+      font-weight: 800;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .service-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: #000;
+      color: #fff;
+      padding: 1px 4px;
+    }
+
+    .service-desc {
+      font-size: 11px;
+      font-weight: 500;
+      color: #444;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .bottom-line {
+      margin-top: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      background: #eee;
+      padding: 8px;
+      border: 2px solid #000;
+    }
+
+    /* ========================================
+       7. Card Back Styles
+       ======================================== */
+    .card.back .card-header {
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .card.back .card-header h2 {
+      font-size: 24px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #000;
+      display: inline-block;
+      background: var(--info-bg);
+      padding: 2px 8px;
+      border: 2px solid #000;
+    }
+
+    .divider {
+      width: 100%;
+      height: 4px;
+      background: #000;
+      margin: 16px 0 0;
+    }
+
+    .steps {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step {
+      padding-bottom: 0;
+      position: relative;
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: #000;
+      display: inline-block;
+      padding: 2px 6px;
+      margin-bottom: 6px;
+    }
+
+    .step h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #000;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .step p {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    .claim-info {
+      margin-top: 20px;
+      margin-bottom: 12px;
+    }
+
+    .info-box {
+      background: var(--info-bg);
+      border: 3px solid var(--info-border);
+      border-radius: 0;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 4px 4px 0px #000;
+      transform: rotate(1deg);
+    }
+
+    .info-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #000;
+      margin: 0;
+    }
+
+    .footer-info {
+      text-align: center;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 2px dashed #ccc;
+    }
+
+    .footer-info p {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    /* ========================================
+       8. Flip Indicator Styles
+       ======================================== */
+    .flip-indicator {
+      margin-top: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      color: #000;
+      border: 3px solid #000;
+      padding: 10px 20px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      box-shadow: 6px 6px 0px #000;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .flip-indicator:active {
+      transform: translate(2px, 2px);
+      box-shadow: 4px 4px 0px #000;
+    }
+
+    .flip-indicator.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flip-indicator .icon {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    /* ========================================
+       9. Responsive Styles
+       ======================================== */
+    /* Tablet */
+    @media (min-width: 768px) {
+      body {
+        padding: 40px;
+      }
+
+      .card-container {
+        width: 480px;
+        height: 760px;
+      }
+
+      .card {
+        padding: 48px 40px;
+      }
+
+      .card-header h1 {
+        font-size: 36px;
+      }
+
+      .amount {
+        font-size: 56px;
+      }
+
+      .service-list li {
+        font-size: 18px;
+        line-height: 1.8;
+      }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+      .amount {
+        font-size: 64px;
+      }
+    }
+
+    /* Small Mobile */
+    @media (max-width: 360px) {
+      .amount {
+        font-size: 36px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+
+    /* Landscape Mobile */
+    @media (max-height: 600px) and (orientation: landscape) {
+      .card-container {
+        width: min(400px, 60vw);
+        height: 80vh;
+      }
+
+      .card {
+        padding: 20px 24px;
+      }
+
+      .amount-box {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .amount {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ========================================
+       Security Seal Overlay
+       ======================================== -->
+  <div id="security-overlay">
+    <div class="seal-container">
+      <div class="lock-icon">🔒</div>
+      <div class="warning-tape">Global Top Tier AI</div>
+      <p class="security-msg">
+        AUTHORIZED PERSONNEL ONLY<br>
+        SECURE CONNECTION ESTABLISHED
+      </p>
+      <button class="break-seal-btn" id="breakSealBtn">
+        Break Seal & Enter
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================
+       Main Card Container
+       ======================================== -->
+  <div id="main-container">
+    <div class="card-wrapper">
+      <div class="card-container" id="cardContainer">
+        <!-- Front Card -->
+        <div class="card front">
+          <div class="card-header">
+            <h1>AI PASS</h1>
+          </div>
+
+          <div class="amount-box">
+            <div class="amount">₩70,000</div>
+          </div>
+
+          <ul class="service-list">
+            <li>
+              <div class="service-row">
+                <span class="service-name">Midjourney</span>
+                <span class="service-meta">Pro $30</span>
+              </div>
+              <span class="service-desc">최고 품질 이미지 생성, 상업적 사용 가능</span>
+            </li>
+            <li>
+              <div class="service-row">
+                <span class="service-name">Kling</span>
+                <span class="service-meta">Creator $30</span>
+              </div>
+              <span class="service-desc">텍스트·이미지 기반 고퀄 영상 생성</span>
+            </li>
+            <li>
+              <div class="service-row">
+                <span class="service-name">Suno</span>
+                <span class="service-meta">Pro $10</span>
+              </div>
+              <span class="service-desc">가사·멜로디 기반 AI 음악 생성</span>
+            </li>
+            <li>
+              <div class="service-row">
+                <span class="service-name">Gemini</span>
+                <span class="service-meta">Adv $20</span>
+              </div>
+              <span class="service-desc">구글 멀티모달, 문서·리서치 강점</span>
+            </li>
+            <li>
+              <div class="service-row">
+                <span class="service-name">Claude Code</span>
+                <span class="service-meta">Pro $20</span>
+              </div>
+              <span class="service-desc">코드 이해·리팩토링·대용량 문서</span>
+            </li>
+          </ul>
+
+          <div class="bottom-line">
+            이미지=Midjourney / 영상=Kling / 음악=Suno<br>
+            리서치=Gemini / 코드=Claude Code
+          </div>
+        </div>
+
+        <!-- Back Card -->
+        <div class="card back">
+          <div class="card-header">
+            <h2>How to use</h2>
+            <div class="divider"></div>
+          </div>
+
+          <div class="intro-box" style="margin-bottom: 20px;">
+            <p
+              style="font-size: 13px; font-weight: 500; font-family: var(--font-display); line-height: 1.5; color: #333;">
+              제가 직접 구매하고 싶었던 AI 서비스입니다.<br>
+              AI 서비스 특성상 기프트 카드가 없어,<br>
+              아래 방식으로 진행합니다.
+            </p>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">01 / Pay First</div>
+              <h3>Subscribe Directly</h3>
+              <p>
+                본인 계정으로 서비스를 먼저 결제해 주세요.<br>
+                월간/연간 구독, 여러 서비스 조합 가능.<br>
+                <strong>조건은 하나, 실제 사용 가능한 서비스여야 합니다.</strong>
+              </p>
+            </div>
+
+            <div class="step">
+              <div class="step-number">02 / Claim</div>
+              <h3>Get Reimbursed</h3>
+              <p>
+                결제 완료 후 알려주시면,<br>
+                <strong>확인 즉시 해당 금액을 송금해 드립니다.</strong>
+              </p>
+            </div>
+          </div>
+
+          <div class="claim-info">
+            <div class="info-box">
+              <p class="info-text">
+                이건 선물이 아니라<br>
+                AI 사용 권한을 현금처럼 교환하는 구조입니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="footer-info">
+            <p>Valid until Dec 2025</p>
+            <p>Max amount ₩70,000</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-indicator" id="flipIndicator">
+      <span>Tap to flip</span>
+      <span class="icon">↻</span>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================
+       1. State Management
+       ======================================== */
+    let isFlipped = false;
+    let flipCount = parseInt(localStorage.getItem('flipCount') || '0');
+
+    /* ========================================
+       2. DOM Elements
+       ======================================== */
+    const securityOverlay = document.getElementById('security-overlay');
+    const breakSealBtn = document.getElementById('breakSealBtn');
+    const mainContainer = document.getElementById('main-container');
+    const cardContainer = document.getElementById('cardContainer');
+    const flipIndicator = document.getElementById('flipIndicator');
+
+    /* ========================================
+       3. Interaction Logic
+       ======================================== */
+    breakSealBtn.addEventListener('click', () => {
+      unlockContent();
+    });
+
+    function unlockContent() {
+      // 1. Animate Overlay Out
+      securityOverlay.classList.add('unlocked');
+
+      // 2. Animate Content In
+      // Slight delay to sync with overlay fade
+      setTimeout(() => {
+        mainContainer.classList.add('visible');
+      }, 200);
+    }
+
+    /* ========================================
+       4. Card Flip Mechanics
+       ======================================== */
+    function flipCard() {
+      isFlipped = !isFlipped;
+
+      if (isFlipped) {
+        cardContainer.classList.add('flipped');
+      } else {
+        cardContainer.classList.remove('flipped');
+      }
+
+      // Update flip count and hide indicator
+      flipCount++;
+      localStorage.setItem('flipCount', flipCount.toString());
+
+      if (flipCount >= 1) {
+        hideFlipIndicator();
+      }
+    }
+
+    function hideFlipIndicator() {
+      flipIndicator.classList.add('hidden');
+    }
+
+    cardContainer.addEventListener('click', flipCard);
+    flipIndicator.addEventListener('click', flipCard);
+
+    /* ========================================
+       5. Touch & Swipe Handlers
+       ======================================== */
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      // Only detect horizontal swipe if vertical movement is small
+      if (Math.abs(deltaX) > swipeThreshold && deltaY < 100) {
+        flipCard();
+      }
+    }
+
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    });
+
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    });
+  </script>
+</body>
+
+</html>
