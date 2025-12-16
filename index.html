@@ -40,8 +40,8 @@
       --card-bg: #FFFFFF;
       --card-border: #000000;
       --card-border-width: 3px;
-      --card-shadow: 10px 10px 0px 0px #000000;
-      --card-shadow-active: 6px 6px 0px 0px #000000;
+      --card-shadow: 8px 8px 0px 0px #000000;
+      --card-shadow-active: 4px 4px 0px 0px #000000;
 
       /* Text */
       --text-primary: #000000;
@@ -50,8 +50,21 @@
 
       /* Animation */
       --easing-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+      --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
       --font-display: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+      /* Mobile-first spacing */
+      --space-xs: clamp(4px, 1vw, 8px);
+      --space-sm: clamp(8px, 2vw, 12px);
+      --space-md: clamp(12px, 3vw, 20px);
+      --space-lg: clamp(16px, 4vw, 32px);
+
+      /* Safe areas for notched devices */
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
 
     /* ========================================
@@ -68,7 +81,7 @@
     html,
     body {
       height: 100%;
-      overflow: hidden;
+      /* overflow: hidden; Removed to allow scrolling on small screens */
     }
 
     body {
@@ -77,14 +90,24 @@
       background-image:
         linear-gradient(var(--grid-color) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-      background-size: 32px 32px;
+      background-size: 24px 24px;
       min-height: 100vh;
+      min-height: 100dvh;
+      min-height: -webkit-fill-available;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px 16px;
+      padding: var(--space-md);
+      padding-top: calc(var(--space-md) + var(--safe-top));
+      padding-bottom: calc(var(--space-md) + var(--safe-bottom));
+      padding-left: calc(var(--space-md) + var(--safe-left));
+      padding-right: calc(var(--space-md) + var(--safe-right));
       color: var(--text-primary);
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: none;
     }
 
     body::after {
@@ -97,10 +120,30 @@
       font-size: 12px;
       opacity: 0.5;
       pointer-events: none;
+      z-index: 100;
+    }
+
+    .ngept-footer {
+      position: static;
+      margin-top: 20px;
+      /* removed fixed positioning properties */
+      /* bottom: 24px; */
+      /* left: 50%; */
+      /* transform: translateX(-50%); */
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--text-primary);
+      opacity: 0.4;
+      /* z-index: 50; */
+      /* pointer-events: none; */
+      letter-spacing: 1px;
+      text-align: center;
+      width: 100%;
     }
 
     /* ========================================
-       3. Security Seal Overlay (Option A)
+       3. Security Seal Overlay
        ======================================== */
     #security-overlay {
       position: fixed;
@@ -108,27 +151,28 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(20, 20, 20, 0.95);
+      background-color: rgba(15, 15, 15, 0.97);
       background-image:
         repeating-linear-gradient(45deg,
-          #1a1a1a,
-          #1a1a1a 10px,
-          #222 10px,
-          #222 20px);
+          #141414,
+          #141414 8px,
+          #1a1a1a 8px,
+          #1a1a1a 16px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
     }
 
     .seal-container {
       position: relative;
       width: 100%;
-      max-width: 400px;
-      padding: 0 20px;
+      max-width: 360px;
+      padding: 0 clamp(16px, 5vw, 24px);
       text-align: center;
     }
 
@@ -137,74 +181,86 @@
       color: #000;
       font-family: var(--font-mono);
       font-weight: 800;
-      font-size: 18px;
-      padding: 12px 0;
-      width: 120%;
-      margin-left: -10%;
-      transform: rotate(-5deg);
+      font-size: clamp(12px, 4vw, 18px);
+      padding: clamp(8px, 2.5vw, 12px) 0;
+      width: 115%;
+      margin-left: -7.5%;
+      transform: rotate(-4deg);
       border: 3px solid #000;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       text-transform: uppercase;
-      margin-bottom: 40px;
+      margin-bottom: clamp(24px, 6vw, 40px);
       position: relative;
+      overflow: hidden;
     }
 
     .warning-tape::before,
     .warning-tape::after {
       content: "CONFIDENTIAL // DO NOT SHARE //";
       white-space: nowrap;
+      animation: scrollTape 8s linear infinite;
+    }
+
+    @keyframes scrollTape {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
     }
 
     .lock-icon {
-      font-size: 60px;
-      margin-bottom: 24px;
+      font-size: clamp(48px, 12vw, 64px);
+      margin-bottom: clamp(16px, 4vw, 24px);
       filter: drop-shadow(0 4px 0 #000);
       animation: pulseLock 2s infinite ease-in-out;
     }
 
     @keyframes pulseLock {
-
-      0%,
-      100% {
+      0%, 100% {
         transform: scale(1);
       }
-
       50% {
-        transform: scale(1.1);
+        transform: scale(1.08);
       }
     }
 
     .security-msg {
       color: #FFF;
       font-family: var(--font-mono);
-      font-size: 14px;
-      margin-bottom: 32px;
-      opacity: 0.8;
-      line-height: 1.5;
+      font-size: clamp(11px, 3vw, 14px);
+      margin-bottom: clamp(20px, 5vw, 32px);
+      opacity: 0.85;
+      line-height: 1.6;
+      letter-spacing: 0.5px;
     }
 
     .break-seal-btn {
       background: #000;
       color: #FFF;
       border: 2px solid #FFF;
-      padding: 16px 32px;
+      padding: clamp(12px, 3vw, 16px) clamp(24px, 6vw, 36px);
       font-family: var(--font-display);
-      font-size: 18px;
+      font-size: clamp(14px, 4vw, 18px);
       font-weight: 700;
       text-transform: uppercase;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s;
-      box-shadow: 6px 6px 0 #FFF;
+      transition: all 0.15s ease;
+      box-shadow: 5px 5px 0 #FFF;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 48px; /* Minimum touch target */
     }
 
     .break-seal-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 3px 3px 0 #FFF;
+      transform: translate(3px, 3px);
+      box-shadow: 2px 2px 0 #FFF;
     }
 
     #security-overlay.unlocked {
-      animation: unlockFade 0.6s var(--easing-smooth) forwards;
+      animation: unlockFade 0.5s var(--easing-smooth) forwards;
       pointer-events: none;
     }
 
@@ -213,10 +269,9 @@
         opacity: 1;
         transform: scale(1);
       }
-
       100% {
         opacity: 0;
-        transform: scale(1.1);
+        transform: scale(1.05);
       }
     }
 
@@ -247,22 +302,26 @@
        5. 3D Flip Card Styles
        ======================================== */
     .card-container {
-      width: min(380px, 90vw);
-      height: min(640px, 85vh);
+      width: min(360px, calc(100vw - 32px));
+      height: min(580px, calc(100dvh - 120px));
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.6s var(--easing-smooth);
+      transition: transform 0.5s var(--easing-smooth);
       cursor: pointer;
       will-change: transform;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .card-container.flipped {
       transform: rotateY(180deg);
     }
 
+    /* Touch feedback - press effect */
     .card-container:active .card {
       box-shadow: var(--card-shadow-active);
       transform: translate3d(4px, 4px, 0);
+      transition: all 0.1s ease;
     }
 
     .card {
@@ -275,11 +334,13 @@
       border: var(--card-border-width) solid var(--card-border);
       box-shadow: var(--card-shadow);
       border-radius: 0;
-      padding: 32px 28px;
+      padding: clamp(16px, 4vw, 32px) clamp(16px, 4vw, 28px);
       display: flex;
       flex-direction: column;
       transform: translate3d(0, 0, 0);
       overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .card.front::before {
@@ -307,14 +368,15 @@
        ======================================== */
     .card-header {
       text-align: center;
-      margin-bottom: 24px;
-      margin-top: 12px;
+      margin-bottom: clamp(12px, 3vw, 24px);
+      margin-top: clamp(4px, 2vw, 12px);
       position: relative;
+      flex-shrink: 0;
     }
 
     .card-header h1 {
       font-family: var(--font-display);
-      font-size: 28px;
+      font-size: clamp(22px, 6vw, 28px);
       font-weight: 800;
       letter-spacing: -1px;
       color: #000;
@@ -331,18 +393,19 @@
       border: 3px solid #000;
       background: #fff;
       border-radius: 0;
-      padding: 24px 20px;
+      padding: clamp(12px, 3vw, 24px) clamp(12px, 3vw, 20px);
       text-align: center;
-      margin-bottom: 32px;
-      box-shadow: 6px 6px 0px #000;
+      margin-bottom: clamp(16px, 4vw, 32px);
+      box-shadow: 5px 5px 0px #000;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      flex-shrink: 0;
     }
 
     .amount {
       font-family: var(--font-mono);
-      font-size: 42px;
+      font-size: clamp(32px, 10vw, 48px);
       font-weight: 700;
       letter-spacing: -2px;
       color: #000;
@@ -356,22 +419,25 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 12px;
-      padding-left: 12px;
+      gap: clamp(6px, 2vw, 12px);
+      padding-left: clamp(8px, 2vw, 12px);
       border-left: 4px solid #000;
+      min-height: 0;
+      overflow-y: auto;
     }
 
     .service-list li {
-      font-size: 14px;
+      font-size: clamp(12px, 3.5vw, 14px);
       font-weight: 700;
       color: #000;
       line-height: 1.3;
       border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
+      padding-bottom: clamp(4px, 1.5vw, 8px);
     }
 
     .service-list li:last-child {
       border-bottom: none;
+      padding-bottom: 0;
     }
 
     .service-row {
@@ -379,50 +445,58 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2px;
+      gap: 8px;
     }
 
     .service-name {
       font-weight: 800;
-      font-size: 15px;
+      font-size: clamp(13px, 3.8vw, 15px);
       text-transform: uppercase;
     }
 
     .service-meta {
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: clamp(9px, 2.5vw, 11px);
       background: #000;
       color: #fff;
-      padding: 1px 4px;
+      padding: 2px 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .service-desc {
-      font-size: 11px;
+      font-size: clamp(10px, 2.8vw, 11px);
       font-weight: 500;
-      color: #444;
+      color: #555;
       display: block;
       margin-top: 2px;
+      line-height: 1.35;
     }
 
     .bottom-line {
-      margin-top: 16px;
-      font-size: 11px;
+      margin-top: auto;
+      padding-top: clamp(8px, 2vw, 16px);
+      font-size: clamp(9px, 2.5vw, 11px);
       font-weight: 700;
       text-align: center;
-      background: #eee;
-      padding: 8px;
+      background: #f5f5f5;
+      padding: clamp(6px, 1.5vw, 8px);
       border: 2px solid #000;
+      flex-shrink: 0;
+      line-height: 1.5;
     }
 
     /* ========================================
        7. Card Back Styles
        ======================================== */
     .card.back .card-header {
-      margin-bottom: 24px;
+      margin-bottom: clamp(12px, 3vw, 24px);
       text-align: left;
+      flex-shrink: 0;
     }
 
     .card.back .card-header h2 {
-      font-size: 24px;
+      font-size: clamp(18px, 5vw, 24px);
       font-weight: 800;
       text-transform: uppercase;
       color: #000;
@@ -434,16 +508,27 @@
 
     .divider {
       width: 100%;
-      height: 4px;
+      height: 3px;
       background: #000;
-      margin: 16px 0 0;
+      margin: clamp(8px, 2vw, 16px) 0 0;
+    }
+
+    .intro-box {
+      flex-shrink: 0;
+    }
+
+    .intro-box p {
+      font-size: clamp(11px, 3vw, 13px) !important;
+      line-height: 1.5 !important;
     }
 
     .steps {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: clamp(10px, 2.5vw, 16px);
+      min-height: 0;
+      overflow-y: auto;
     }
 
     .step {
@@ -453,17 +538,17 @@
 
     .step-number {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: clamp(10px, 2.5vw, 12px);
       font-weight: 700;
       color: #fff;
       background: #000;
       display: inline-block;
       padding: 2px 6px;
-      margin-bottom: 6px;
+      margin-bottom: clamp(4px, 1vw, 6px);
     }
 
     .step h3 {
-      font-size: 16px;
+      font-size: clamp(13px, 3.5vw, 16px);
       font-weight: 800;
       color: #000;
       margin-bottom: 2px;
@@ -471,22 +556,23 @@
     }
 
     .step p {
-      font-size: 13px;
+      font-size: clamp(11px, 3vw, 13px);
       font-weight: 500;
       color: #333;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .claim-info {
-      margin-top: 20px;
-      margin-bottom: 12px;
+      margin-top: clamp(12px, 3vw, 20px);
+      margin-bottom: clamp(8px, 2vw, 12px);
+      flex-shrink: 0;
     }
 
     .info-box {
       background: var(--info-bg);
       border: 3px solid var(--info-border);
       border-radius: 0;
-      padding: 12px;
+      padding: clamp(8px, 2vw, 12px);
       text-align: center;
       box-shadow: 4px 4px 0px #000;
       transform: rotate(1deg);
@@ -494,7 +580,7 @@
 
     .info-text {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: clamp(10px, 2.8vw, 12px);
       font-weight: 700;
       line-height: 1.5;
       color: #000;
@@ -504,13 +590,14 @@
     .footer-info {
       text-align: center;
       margin-top: auto;
-      padding-top: 12px;
+      padding-top: clamp(8px, 2vw, 12px);
       border-top: 2px dashed #ccc;
+      flex-shrink: 0;
     }
 
     .footer-info p {
       font-family: var(--font-mono);
-      font-size: 10px;
+      font-size: clamp(9px, 2.5vw, 10px);
       font-weight: 700;
       color: #888;
       text-transform: uppercase;
@@ -520,41 +607,123 @@
        8. Flip Indicator Styles
        ======================================== */
     .flip-indicator {
-      margin-top: 32px;
+      margin-top: clamp(16px, 4vw, 32px);
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
       background: #fff;
       color: #000;
       border: 3px solid #000;
-      padding: 10px 20px;
+      padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px);
       font-family: var(--font-mono);
-      font-size: 14px;
+      font-size: clamp(12px, 3.2vw, 14px);
       font-weight: 700;
       text-transform: uppercase;
-      box-shadow: 6px 6px 0px #000;
-      transition: all 0.2s ease;
+      box-shadow: 5px 5px 0px #000;
+      transition: all 0.15s ease;
       cursor: pointer;
+      animation: pulseHint 2s ease-in-out infinite;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(-4px);
+      }
+      75% {
+        transform: translateX(4px);
+      }
     }
 
     .flip-indicator:active {
       transform: translate(2px, 2px);
-      box-shadow: 4px 4px 0px #000;
+      box-shadow: 3px 3px 0px #000;
+      animation: none;
     }
 
     .flip-indicator.hidden {
       opacity: 0;
       pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
     }
 
     .flip-indicator .icon {
-      font-size: 18px;
+      font-size: clamp(16px, 4vw, 20px);
       font-weight: 800;
+      animation: rotateIcon 2s ease-in-out infinite;
+    }
+
+    @keyframes rotateIcon {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(180deg);
+      }
+    }
+
+    /* Adjust for very small screens */
+    @media (max-height: 700px) {
+      .ngept-footer {
+        margin-top: 8px;
+        font-size: 11px;
+      }
+
+      body::after {
+        display: none;
+      }
     }
 
     /* ========================================
        9. Responsive Styles
        ======================================== */
+
+    /* Very Small Mobile (iPhone SE, small Androids) */
+    @media (max-width: 375px) {
+      .card-container {
+        width: calc(100vw - 24px);
+        height: min(540px, calc(100dvh - 100px));
+      }
+
+      .card {
+        padding: 14px 12px;
+      }
+
+      .service-list {
+        gap: 6px;
+      }
+
+      .service-desc {
+        display: none; /* Hide descriptions on very small screens */
+      }
+
+      .bottom-line br {
+        display: none;
+      }
+    }
+
+    /* Small Mobile (360-414px) */
+    @media (min-width: 376px) and (max-width: 414px) {
+      .card-container {
+        width: calc(100vw - 28px);
+        height: min(560px, calc(100dvh - 110px));
+      }
+    }
+
+    /* Standard Mobile (415-767px) */
+    @media (min-width: 415px) and (max-width: 767px) {
+      .card-container {
+        width: min(380px, calc(100vw - 32px));
+        height: min(600px, calc(100dvh - 120px));
+      }
+    }
+
     /* Tablet */
     @media (min-width: 768px) {
       body {
@@ -562,64 +731,96 @@
       }
 
       .card-container {
-        width: 480px;
-        height: 760px;
+        width: 440px;
+        height: 680px;
       }
 
       .card {
-        padding: 48px 40px;
+        padding: 36px 32px;
       }
 
       .card-header h1 {
-        font-size: 36px;
+        font-size: 32px;
       }
 
       .amount {
-        font-size: 56px;
+        font-size: 52px;
       }
 
       .service-list li {
-        font-size: 18px;
-        line-height: 1.8;
+        font-size: 15px;
+        line-height: 1.5;
       }
     }
 
     /* Desktop */
     @media (min-width: 1024px) {
-      .amount {
-        font-size: 64px;
-      }
-    }
-
-    /* Small Mobile */
-    @media (max-width: 360px) {
-      .amount {
-        font-size: 36px;
+      .card-container {
+        width: 480px;
+        height: 720px;
       }
 
       .card {
-        padding: 20px;
+        padding: 40px 36px;
+      }
+
+      .amount {
+        font-size: 56px;
       }
     }
 
     /* Landscape Mobile */
-    @media (max-height: 600px) and (orientation: landscape) {
+    @media (max-height: 500px) and (orientation: landscape) {
+      body {
+        padding: 12px;
+        align-items: flex-start;
+        padding-top: calc(12px + var(--safe-top));
+      }
+
       .card-container {
-        width: min(400px, 60vw);
-        height: 80vh;
+        width: min(340px, 50vw);
+        height: calc(100dvh - 80px);
       }
 
       .card {
-        padding: 20px 24px;
+        padding: 12px 14px;
       }
 
       .amount-box {
-        padding: 16px;
-        margin-bottom: 16px;
+        padding: 10px;
+        margin-bottom: 10px;
       }
 
       .amount {
-        font-size: 32px;
+        font-size: 28px;
+      }
+
+      .flip-indicator {
+        margin-top: 12px;
+        padding: 8px 16px;
+      }
+
+      .ngept-footer {
+        display: none;
+      }
+
+      .service-desc {
+        display: none;
+      }
+    }
+
+    /* Short screens (notch awareness) */
+    @media (max-height: 650px) {
+      .card-container {
+        height: min(520px, calc(100dvh - 90px));
+      }
+
+      .intro-box {
+        display: none;
+      }
+
+      .steps {
+        gap: 8px;
       }
     }
   </style>
@@ -761,6 +962,9 @@
       <span>Tap to flip</span>
       <span class="icon">↻</span>
     </div>
+
+    <!-- NGEPT Footer -->
+    <div class="ngept-footer">NGEPT</div>
   </div>
 
   <script>
@@ -769,6 +973,7 @@
        ======================================== */
     let isFlipped = false;
     let flipCount = parseInt(localStorage.getItem('flipCount') || '0');
+    let isAnimating = false;
 
     /* ========================================
        2. DOM Elements
@@ -780,27 +985,53 @@
     const flipIndicator = document.getElementById('flipIndicator');
 
     /* ========================================
-       3. Interaction Logic
+       3. Haptic Feedback (if supported)
        ======================================== */
-    breakSealBtn.addEventListener('click', () => {
-      unlockContent();
-    });
-
-    function unlockContent() {
-      // 1. Animate Overlay Out
-      securityOverlay.classList.add('unlocked');
-
-      // 2. Animate Content In
-      // Slight delay to sync with overlay fade
-      setTimeout(() => {
-        mainContainer.classList.add('visible');
-      }, 200);
+    function triggerHaptic(type = 'light') {
+      if ('vibrate' in navigator) {
+        const patterns = {
+          light: [10],
+          medium: [20],
+          heavy: [30, 10, 30]
+        };
+        navigator.vibrate(patterns[type] || patterns.light);
+      }
     }
 
     /* ========================================
-       4. Card Flip Mechanics
+       4. Interaction Logic
+       ======================================== */
+    breakSealBtn.addEventListener('click', () => {
+      triggerHaptic('heavy');
+      unlockContent();
+    });
+
+    // Also support touch for better mobile response
+    breakSealBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      triggerHaptic('heavy');
+      unlockContent();
+    }, { passive: false });
+
+    function unlockContent() {
+      if (securityOverlay.classList.contains('unlocked')) return;
+
+      securityOverlay.classList.add('unlocked');
+
+      setTimeout(() => {
+        mainContainer.classList.add('visible');
+        securityOverlay.style.display = 'none';
+      }, 500);
+    }
+
+    /* ========================================
+       5. Card Flip Mechanics
        ======================================== */
     function flipCard() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      triggerHaptic('medium');
       isFlipped = !isFlipped;
 
       if (isFlipped) {
@@ -816,9 +1047,19 @@
       if (flipCount >= 1) {
         hideFlipIndicator();
       }
+
+      // Reset animation lock after flip completes
+      setTimeout(() => {
+        isAnimating = false;
+      }, 500);
     }
 
     function hideFlipIndicator() {
+      flipIndicator.classList.add('hidden');
+    }
+
+    // Check if indicator should be hidden on load
+    if (flipCount >= 1) {
       flipIndicator.classList.add('hidden');
     }
 
@@ -826,34 +1067,87 @@
     flipIndicator.addEventListener('click', flipCard);
 
     /* ========================================
-       5. Touch & Swipe Handlers
+       6. Touch & Swipe Handlers
        ======================================== */
     let touchStartX = 0;
     let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
+    let touchStartTime = 0;
+    let isSwiping = false;
 
-    function handleSwipe() {
-      const swipeThreshold = 50;
-      const deltaX = touchEndX - touchStartX;
-      const deltaY = Math.abs(touchEndY - touchStartY);
+    function handleSwipe(deltaX, deltaY, duration) {
+      const swipeThreshold = 40;
+      const maxVertical = 80;
+      const maxDuration = 300; // Max time for swipe in ms
 
-      // Only detect horizontal swipe if vertical movement is small
-      if (Math.abs(deltaX) > swipeThreshold && deltaY < 100) {
+      // Quick horizontal swipe detection
+      if (Math.abs(deltaX) > swipeThreshold &&
+          Math.abs(deltaY) < maxVertical &&
+          duration < maxDuration) {
         flipCard();
+        return true;
       }
+      return false;
     }
 
-    document.addEventListener('touchstart', e => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    });
+    cardContainer.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      isSwiping = true;
+    }, { passive: true });
 
-    document.addEventListener('touchend', e => {
-      touchEndX = e.changedTouches[0].screenX;
-      touchEndY = e.changedTouches[0].screenY;
-      handleSwipe();
-    });
+    cardContainer.addEventListener('touchmove', (e) => {
+      if (!isSwiping) return;
+
+      const deltaX = e.touches[0].clientX - touchStartX;
+      const deltaY = e.touches[0].clientY - touchStartY;
+
+      // Add subtle tilt effect during swipe
+      if (Math.abs(deltaX) > 10) {
+        const tiltAmount = Math.min(Math.max(deltaX / 20, -8), 8);
+        cardContainer.style.transform = isFlipped
+          ? `rotateY(180deg) rotateZ(${-tiltAmount}deg)`
+          : `rotateZ(${tiltAmount}deg)`;
+      }
+    }, { passive: true });
+
+    cardContainer.addEventListener('touchend', (e) => {
+      if (!isSwiping) return;
+      isSwiping = false;
+
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      const duration = Date.now() - touchStartTime;
+
+      // Reset any tilt
+      cardContainer.style.transform = isFlipped ? 'rotateY(180deg)' : '';
+
+      handleSwipe(deltaX, deltaY, duration);
+    }, { passive: true });
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    /* ========================================
+       7. Prevent overscroll/bounce on iOS
+       ======================================== */
+    document.body.addEventListener('touchmove', (e) => {
+      if (e.target.closest('.card')) {
+        // Allow scrolling inside card if content overflows
+        return;
+      }
+      // Prevent body bounce
+      if (document.body.scrollHeight <= window.innerHeight) {
+        e.preventDefault();
+      }
+    }, { passive: false });
   </script>
 </body>
 
