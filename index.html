@@ -1071,13 +1071,13 @@
     /* ========================================
        6. Touch Gesture Detection
        Distinguishes: tap, swipe, scroll, long-press
+       No inline transform - let CSS handle flip animation
        ======================================== */
     const GESTURE = {
-      TAP_MAX_DURATION: 250,      // ms - max time for a tap
-      TAP_MAX_DISTANCE: 15,       // px - max movement for a tap
-      SWIPE_MIN_DISTANCE: 50,     // px - min horizontal for swipe
-      SWIPE_MAX_VERTICAL: 100,    // px - max vertical during swipe
-      SWIPE_MAX_DURATION: 400,    // ms - max time for a swipe
+      TAP_MAX_DURATION: 300,      // ms - max time for a tap
+      TAP_MAX_DISTANCE: 12,       // px - max movement for a tap
+      SWIPE_MIN_DISTANCE: 40,     // px - min horizontal for swipe
+      SWIPE_MAX_VERTICAL: 80,     // px - max vertical during swipe
       LONG_PRESS_DURATION: 500    // ms - time for long press
     };
 
@@ -1086,34 +1086,28 @@
       startY: 0,
       startTime: 0,
       isActive: false,
-      hasMoved: false,
       longPressTimer: null
     };
 
-    function resetTouch() {
-      touch.isActive = false;
-      touch.hasMoved = false;
+    function clearLongPressTimer() {
       if (touch.longPressTimer) {
         clearTimeout(touch.longPressTimer);
         touch.longPressTimer = null;
       }
-      // Reset any transform
-      cardContainer.style.transform = isFlipped ? 'rotateY(180deg)' : '';
     }
 
     // Card touch handlers
     cardContainer.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) return; // Single touch only
+      if (e.touches.length !== 1) return;
 
       touch.startX = e.touches[0].clientX;
       touch.startY = e.touches[0].clientY;
       touch.startTime = Date.now();
       touch.isActive = true;
-      touch.hasMoved = false;
 
-      // Long press detection (do nothing on long press)
+      // Long press: cancel flip action
       touch.longPressTimer = setTimeout(() => {
-        touch.isActive = false; // Cancel any action
+        touch.isActive = false;
       }, GESTURE.LONG_PRESS_DURATION);
     }, { passive: true });
 
@@ -1122,65 +1116,51 @@
 
       const deltaX = e.touches[0].clientX - touch.startX;
       const deltaY = e.touches[0].clientY - touch.startY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-      // Mark as moved if beyond tap threshold
-      if (distance > GESTURE.TAP_MAX_DISTANCE) {
-        touch.hasMoved = true;
-        // Cancel long press timer once movement detected
-        if (touch.longPressTimer) {
-          clearTimeout(touch.longPressTimer);
-          touch.longPressTimer = null;
-        }
+      // If significant movement, cancel long press timer
+      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+        clearLongPressTimer();
       }
 
-      // Visual feedback: subtle tilt during horizontal swipe
-      if (Math.abs(deltaX) > 20 && Math.abs(deltaY) < GESTURE.SWIPE_MAX_VERTICAL) {
-        const tiltAmount = Math.min(Math.max(deltaX / 25, -6), 6);
-        cardContainer.style.transform = isFlipped
-          ? `rotateY(180deg) rotateZ(${-tiltAmount}deg)`
-          : `rotateZ(${tiltAmount}deg)`;
+      // If vertical scroll detected, cancel touch action
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 20) {
+        touch.isActive = false;
+        clearLongPressTimer();
       }
     }, { passive: true });
 
     cardContainer.addEventListener('touchend', (e) => {
+      clearLongPressTimer();
+
       if (!touch.isActive) {
-        resetTouch();
+        touch.isActive = false;
         return;
       }
 
       const deltaX = e.changedTouches[0].clientX - touch.startX;
       const deltaY = e.changedTouches[0].clientY - touch.startY;
       const duration = Date.now() - touch.startTime;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-      // Reset transform first
-      cardContainer.style.transform = isFlipped ? 'rotateY(180deg)' : '';
+      touch.isActive = false;
 
-      // Clear long press timer
-      if (touch.longPressTimer) {
-        clearTimeout(touch.longPressTimer);
-        touch.longPressTimer = null;
-      }
+      // Check for tap (small movement, short duration)
+      const isTap = Math.abs(deltaX) < GESTURE.TAP_MAX_DISTANCE &&
+                    Math.abs(deltaY) < GESTURE.TAP_MAX_DISTANCE &&
+                    duration < GESTURE.TAP_MAX_DURATION;
 
-      // Determine gesture type
+      // Check for horizontal swipe
       const isSwipe = Math.abs(deltaX) > GESTURE.SWIPE_MIN_DISTANCE &&
-                      Math.abs(deltaY) < GESTURE.SWIPE_MAX_VERTICAL &&
-                      duration < GESTURE.SWIPE_MAX_DURATION;
+                      Math.abs(deltaY) < GESTURE.SWIPE_MAX_VERTICAL;
 
-      const isTap = distance < GESTURE.TAP_MAX_DISTANCE &&
-                    duration < GESTURE.TAP_MAX_DURATION &&
-                    !touch.hasMoved;
-
-      if (isSwipe || isTap) {
+      if (isTap || isSwipe) {
         flipCard();
       }
-      // Scroll (vertical movement) or long press: do nothing
-
-      resetTouch();
     }, { passive: true });
 
-    cardContainer.addEventListener('touchcancel', resetTouch, { passive: true });
+    cardContainer.addEventListener('touchcancel', () => {
+      touch.isActive = false;
+      clearLongPressTimer();
+    }, { passive: true });
 
     // Flip indicator touch/click handling
     let indicatorTouchHandled = false;
