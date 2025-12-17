@@ -1171,6 +1171,49 @@
       } catch (e) {}
     }
 
+    // Snow falling sound - magical shimmer
+    function playSnowSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        // Create gentle chime cascade
+        const notes = [1318.5, 1568, 1760, 2093, 2349.3]; // E6, G6, A6, C7, D7
+
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          const startTime = now + (i * 0.08);
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.08, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
+
+          osc.start(startTime);
+          osc.stop(startTime + 0.55);
+        });
+
+        // Soft sustained pad
+        const pad = ctx.createOscillator();
+        const padGain = ctx.createGain();
+        pad.connect(padGain);
+        padGain.connect(ctx.destination);
+        pad.type = 'triangle';
+        pad.frequency.setValueAtTime(440, now);
+        padGain.gain.setValueAtTime(0, now);
+        padGain.gain.linearRampToValueAtTime(0.04, now + 0.1);
+        padGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+        pad.start(now);
+        pad.stop(now + 1.3);
+      } catch (e) {}
+    }
+
     // Card flip sound - whoosh
     function playFlipSound() {
       try {
@@ -1482,6 +1525,7 @@
     }
 
     function triggerSnow() {
+      playSnowSound();
       const letters = ['N', 'G', 'E', 'P', 'T'];
       const count = 50;
 
