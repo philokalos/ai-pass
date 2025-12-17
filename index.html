@@ -151,21 +151,39 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(15, 15, 15, 0.97);
-      background-image:
-        repeating-linear-gradient(45deg,
-          #141414,
-          #141414 8px,
-          #1a1a1a 8px,
-          #1a1a1a 16px);
+      background-color: #0a0a0a;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
       padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+      overflow: hidden;
+    }
+
+    /* NGEPT diagonal repeating watermark */
+    #security-overlay::before {
+      content: "NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT NGEPT";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      font-family: var(--font-mono);
+      font-size: clamp(14px, 3vw, 20px);
+      font-weight: 800;
+      letter-spacing: 0.5em;
+      line-height: 2.5;
+      word-spacing: 1em;
+      color: rgba(255, 255, 255, 0.03);
+      transform: rotate(-45deg);
+      pointer-events: none;
+      white-space: normal;
+      text-align: justify;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
     }
 
     .seal-container {
@@ -857,7 +875,7 @@
           </div>
 
           <div class="amount-box">
-            <div class="amount">₩70,000</div>
+            <div class="amount">$70</div>
           </div>
 
           <ul class="service-list">
@@ -952,7 +970,7 @@
 
           <div class="footer-info">
             <p>Valid until Dec 2025</p>
-            <p>Max ₩70,000 (원할 시 ₩100,000)</p>
+            <p>Max $70 (원할 시 $100)</p>
           </div>
         </div>
       </div>
