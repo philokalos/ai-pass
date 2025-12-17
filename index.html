@@ -1110,6 +1110,118 @@
     }
 
     /* ========================================
+       3.5. Sound Effects System
+       ======================================== */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Unlock sound - dramatic reveal
+    function playUnlockSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        // Low rumble sweep
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(150, now);
+        osc1.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+        gain1.gain.setValueAtTime(0.2, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+
+        // High sparkle
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.1);
+        osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.25);
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.15, now + 0.12);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.45);
+
+        // Click/latch sound
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.connect(gain3);
+        gain3.connect(ctx.destination);
+        osc3.type = 'square';
+        osc3.frequency.setValueAtTime(1200, now + 0.05);
+        gain3.gain.setValueAtTime(0.1, now + 0.05);
+        gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc3.start(now + 0.05);
+        osc3.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    // Card flip sound - whoosh
+    function playFlipSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        // White noise for whoosh
+        const bufferSize = ctx.sampleRate * 0.15;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        // Bandpass filter for whoosh character
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1000, now);
+        filter.frequency.exponentialRampToValueAtTime(400, now + 0.12);
+        filter.Q.value = 1;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        noise.start(now);
+        noise.stop(now + 0.15);
+
+        // Subtle tonal element
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+        oscGain.gain.setValueAtTime(0.05, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    /* ========================================
        4. Security Overlay Logic
        ======================================== */
     let sealTouchHandled = false;
@@ -1139,6 +1251,7 @@
     function unlockContent() {
       if (securityOverlay.classList.contains('unlocked')) return;
 
+      playUnlockSound();
       securityOverlay.classList.add('unlocked');
 
       setTimeout(() => {
@@ -1155,6 +1268,7 @@
       isAnimating = true;
 
       triggerHaptic('medium');
+      playFlipSound();
       isFlipped = !isFlipped;
 
       if (isFlipped) {
@@ -1320,33 +1434,23 @@
     const likeBtn = document.getElementById('likeBtn');
     const snowContainer = document.getElementById('snowContainer');
     let hasLiked = false;
-    let audioContext = null;
 
     likeBtn.addEventListener('click', handleLike);
 
     function playLikeSound() {
       try {
-        // Create AudioContext on first interaction (mobile-friendly)
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        // Resume if suspended (mobile browsers)
-        if (audioContext.state === 'suspended') {
-          audioContext.resume();
-        }
-
-        const now = audioContext.currentTime;
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
 
         // Create a pleasant "pop" sound with harmonics
         const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (major chord)
 
         frequencies.forEach((freq, i) => {
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
 
           oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
+          gainNode.connect(ctx.destination);
 
           oscillator.type = 'sine';
           oscillator.frequency.setValueAtTime(freq, now);
@@ -1359,9 +1463,7 @@
           oscillator.start(now + (i * 0.02));
           oscillator.stop(now + 0.35);
         });
-      } catch (e) {
-        // Audio not supported, fail silently
-      }
+      } catch (e) {}
     }
 
     function handleLike() {
