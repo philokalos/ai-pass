@@ -1512,6 +1512,8 @@
     // Snow physics system
     const snowParticles = [];
     let snowAnimationId = null;
+    let snowSpawnerId = null;
+    let isSnowing = false;
     let touchPos = { x: null, y: null, active: false };
     const REPEL_RADIUS = 80;
     const REPEL_STRENGTH = 15;
@@ -1545,19 +1547,41 @@
     });
 
     function triggerSnow() {
+      if (isSnowing) {
+        // Already snowing - just play sound again
+        playSnowSound();
+        return;
+      }
+
+      isSnowing = true;
       playSnowSound();
       const letters = ['N', 'G', 'E', 'P', 'T'];
-      const count = 50;
 
-      for (let i = 0; i < count; i++) {
+      // Initial burst
+      for (let i = 0; i < 30; i++) {
         setTimeout(() => {
           createSnowLetter(letters[i % 5]);
-        }, i * 40);
+        }, i * 30);
       }
+
+      // Continuous spawning
+      let spawnIndex = 0;
+      snowSpawnerId = setInterval(() => {
+        createSnowLetter(letters[spawnIndex % 5]);
+        spawnIndex++;
+      }, 150);
 
       // Start animation loop if not running
       if (!snowAnimationId) {
         animateSnow();
+      }
+    }
+
+    function stopSnow() {
+      isSnowing = false;
+      if (snowSpawnerId) {
+        clearInterval(snowSpawnerId);
+        snowSpawnerId = null;
       }
     }
 
