@@ -686,6 +686,91 @@
       }
     }
 
+    /* ========================================
+       8.5. Like Button & Snow Animation
+       ======================================== */
+    .like-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: clamp(12px, 3vw, 20px);
+      font-family: var(--font-display);
+      font-size: clamp(12px, 3vw, 14px);
+      font-weight: 600;
+      color: #666;
+    }
+
+    .like-btn {
+      background: #fff;
+      border: 2px solid #000;
+      width: clamp(36px, 9vw, 44px);
+      height: clamp(36px, 9vw, 44px);
+      font-size: clamp(18px, 5vw, 24px);
+      cursor: pointer;
+      box-shadow: 3px 3px 0px #000;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .like-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #000;
+    }
+
+    .like-btn.liked {
+      background: #ff4757;
+      border-color: #ff4757;
+      animation: heartPop 0.4s ease;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    /* Snow letters container */
+    #snowContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .snow-letter {
+      position: absolute;
+      top: -50px;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: #000;
+      pointer-events: none;
+      text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+      animation: snowFall linear forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes snowFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(calc(100vh + 50px)) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
     /* Adjust for very small screens */
     @media (max-height: 700px) {
       .ngept-footer {
@@ -981,9 +1066,17 @@
       <span class="icon">↻</span>
     </div>
 
+    <div class="like-section">
+      <span>마음에 드셨다면</span>
+      <button class="like-btn" id="likeBtn">❤️</button>
+    </div>
+
     <!-- NGEPT Footer -->
     <div class="ngept-footer">NGEPT</div>
   </div>
+
+  <!-- Snow Container -->
+  <div id="snowContainer"></div>
 
   <script>
     /* ========================================
@@ -1215,11 +1308,73 @@
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
-      if (now - lastTouchEnd <= 300 && e.target.closest('.card-container, .flip-indicator')) {
+      if (now - lastTouchEnd <= 300 && e.target.closest('.card-container, .flip-indicator, .like-btn')) {
         e.preventDefault();
       }
       lastTouchEnd = now;
     }, { passive: false });
+
+    /* ========================================
+       8. Like Button & Snow Animation
+       ======================================== */
+    const likeBtn = document.getElementById('likeBtn');
+    const snowContainer = document.getElementById('snowContainer');
+    let hasLiked = false;
+
+    likeBtn.addEventListener('click', handleLike);
+
+    function handleLike() {
+      if (hasLiked) {
+        // Already liked, trigger snow again
+        triggerSnow();
+        return;
+      }
+
+      hasLiked = true;
+      likeBtn.classList.add('liked');
+      triggerHaptic('heavy');
+      triggerSnow();
+    }
+
+    function triggerSnow() {
+      const letters = ['N', 'G', 'E', 'P', 'T'];
+      const count = 50;
+
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          createSnowLetter(letters[i % 5]);
+        }, i * 40);
+      }
+    }
+
+    function createSnowLetter(letter) {
+      const el = document.createElement('div');
+      el.className = 'snow-letter';
+      el.textContent = letter;
+
+      // Random horizontal position
+      el.style.left = Math.random() * 100 + 'vw';
+
+      // Random size
+      const size = 16 + Math.random() * 24;
+      el.style.fontSize = size + 'px';
+
+      // Random fall duration
+      const duration = 2 + Math.random() * 2;
+      el.style.animationDuration = duration + 's';
+
+      // Random delay for stagger effect
+      el.style.animationDelay = Math.random() * 0.5 + 's';
+
+      // Random colors from NGEPT palette
+      const colors = ['#000', '#FFE500', '#ff4757', '#333'];
+      el.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+      snowContainer.appendChild(el);
+
+      // Remove after animation
+      el.addEventListener('animationend', () => el.remove());
+    }
   </script>
 </body>
 
