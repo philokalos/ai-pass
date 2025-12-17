@@ -747,28 +747,13 @@
 
     .snow-letter {
       position: absolute;
-      top: -50px;
       font-family: var(--font-mono);
       font-weight: 800;
       color: #000;
       pointer-events: none;
       text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
-      animation: snowFall linear forwards;
       will-change: transform, opacity;
-    }
-
-    @keyframes snowFall {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 1;
-      }
-      80% {
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(calc(100vh + 50px)) rotate(360deg);
-        opacity: 0;
-      }
+      user-select: none;
     }
 
     /* Adjust for very small screens */
@@ -1524,6 +1509,41 @@
       triggerSnow();
     }
 
+    // Snow physics system
+    const snowParticles = [];
+    let snowAnimationId = null;
+    let touchPos = { x: null, y: null, active: false };
+    const REPEL_RADIUS = 80;
+    const REPEL_STRENGTH = 15;
+
+    // Track touch/mouse on snow container
+    snowContainer.addEventListener('touchstart', (e) => {
+      touchPos.active = true;
+      touchPos.x = e.touches[0].clientX;
+      touchPos.y = e.touches[0].clientY;
+    }, { passive: true });
+
+    snowContainer.addEventListener('touchmove', (e) => {
+      if (touchPos.active) {
+        touchPos.x = e.touches[0].clientX;
+        touchPos.y = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    snowContainer.addEventListener('touchend', () => {
+      touchPos.active = false;
+    }, { passive: true });
+
+    snowContainer.addEventListener('mousemove', (e) => {
+      touchPos.active = true;
+      touchPos.x = e.clientX;
+      touchPos.y = e.clientY;
+    });
+
+    snowContainer.addEventListener('mouseleave', () => {
+      touchPos.active = false;
+    });
+
     function triggerSnow() {
       playSnowSound();
       const letters = ['N', 'G', 'E', 'P', 'T'];
@@ -1534,6 +1554,11 @@
           createSnowLetter(letters[i % 5]);
         }, i * 40);
       }
+
+      // Start animation loop if not running
+      if (!snowAnimationId) {
+        animateSnow();
+      }
     }
 
     function createSnowLetter(letter) {
@@ -1541,28 +1566,89 @@
       el.className = 'snow-letter';
       el.textContent = letter;
 
-      // Random horizontal position
-      el.style.left = Math.random() * 100 + 'vw';
-
-      // Random size
       const size = 16 + Math.random() * 24;
       el.style.fontSize = size + 'px';
 
-      // Random fall duration
-      const duration = 2 + Math.random() * 2;
-      el.style.animationDuration = duration + 's';
-
-      // Random delay for stagger effect
-      el.style.animationDelay = Math.random() * 0.5 + 's';
-
-      // Random colors from NGEPT palette
       const colors = ['#000', '#FFE500', '#ff4757', '#333'];
       el.style.color = colors[Math.floor(Math.random() * colors.length)];
 
+      // Initial position
+      const x = Math.random() * window.innerWidth;
+      const y = -50;
+
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+
       snowContainer.appendChild(el);
 
-      // Remove after animation
-      el.addEventListener('animationend', () => el.remove());
+      // Add to physics system
+      snowParticles.push({
+        el: el,
+        x: x,
+        y: y,
+        vx: 0,
+        vy: 1.5 + Math.random() * 2,
+        rotation: 0,
+        rotationSpeed: (Math.random() - 0.5) * 8,
+        opacity: 1
+      });
+    }
+
+    function animateSnow() {
+      const screenHeight = window.innerHeight;
+
+      for (let i = snowParticles.length - 1; i >= 0; i--) {
+        const p = snowParticles[i];
+
+        // Apply repulsion if touch is active
+        if (touchPos.active && touchPos.x !== null) {
+          const dx = p.x - touchPos.x;
+          const dy = p.y - touchPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < REPEL_RADIUS && dist > 0) {
+            const force = (REPEL_RADIUS - dist) / REPEL_RADIUS * REPEL_STRENGTH;
+            p.vx += (dx / dist) * force;
+            p.vy += (dy / dist) * force * 0.5;
+          }
+        }
+
+        // Apply friction to horizontal velocity
+        p.vx *= 0.95;
+
+        // Gravity pulls back down
+        p.vy += 0.05;
+        p.vy = Math.min(p.vy, 4); // terminal velocity
+
+        // Update position
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+
+        // Fade out near bottom
+        if (p.y > screenHeight - 100) {
+          p.opacity = Math.max(0, (screenHeight - p.y) / 100);
+        }
+
+        // Update DOM
+        p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.rotation}deg)`;
+        p.el.style.opacity = p.opacity;
+        p.el.style.left = '0';
+        p.el.style.top = '0';
+
+        // Remove if off screen
+        if (p.y > screenHeight + 50 || p.opacity <= 0) {
+          p.el.remove();
+          snowParticles.splice(i, 1);
+        }
+      }
+
+      // Continue or stop animation
+      if (snowParticles.length > 0) {
+        snowAnimationId = requestAnimationFrame(animateSnow);
+      } else {
+        snowAnimationId = null;
+      }
     }
   </script>
 </body>
